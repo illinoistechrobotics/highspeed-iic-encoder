@@ -14,18 +14,21 @@
 #define USEC_PER_MIN (60E6)
 #include <util/atomic.h>
 
-volatile int16_t vcount;
-int16_t count;
+volatile int32_t vcount;
+int32_t count;
 float rpm;
 volatile float vrpm;
 unsigned long l_micros, d_micros;
 
 void isr_a(){
+  PORTD |= _BV(6);
+  
   if(B_PIN){
     vcount++;
   } else {
     vcount--;
   }
+  PORTD &= ~_BV(6);
 }
 void isr_iic(){
   //Wire.write();
@@ -34,8 +37,8 @@ void isr_iic(){
 void setup() {
   pinMode(A_PIN_NUM,INPUT);
   pinMode(B_PIN_NUM,INPUT);
-  digitalWrite(B_PIN_NUM, HIGH);
   pinMode(Z_PIN_NUM,INPUT);
+  pinMode(6,OUTPUT);
   vcount=0;
   vrpm=0;
   attachInterrupt(A_INT, isr_a, RISING);
@@ -46,18 +49,18 @@ void setup() {
 }
 
 void loop() {
- delay(100);
+ delay(1000);
  ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
  {
   count = vcount;
-  vcount = 0;
+  //vcount = 0;
  }
  d_micros = micros() - l_micros;
  l_micros = micros();
  rpm = count;
- rpm /= TICKS_PER_REV;
- rpm /= d_micros;
- rpm *= USEC_PER_MIN; 
+ //rpm /= TICKS_PER_REV;
+ //rpm /= d_micros;
+ //rpm *= USEC_PER_MIN; 
  
  ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
  {
