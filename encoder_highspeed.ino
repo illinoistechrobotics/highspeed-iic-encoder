@@ -1,3 +1,16 @@
+/* High speed quadrature encoder reader
+ *  
+ *  Note: For >50kHz operation, a 74xx373 latch is required
+ *  with the A output of the encoder wired to the latch gate
+ *  and the B output of the encoder connected through the latch.
+ *  
+ *  Strong (500-1k ohm) pull up resistors are also required
+ *  on the A and B signals for reliable operation at high speed
+ *  in noisy environments with E6B2- series encoders since they do NOT
+ *  drive the outputs bidirectionally and have a very weak internal pullup.
+ *  
+ *  Compilation with the -O2 or -O3 flag is also advisable.
+ */
 #include <Wire.h>
 
 //Config directives
@@ -28,7 +41,9 @@ void isr_a(){
   }
 }
 void isr_iic(){
-  //Wire.write();
+  for(int i = sizeof(double)-1; i>=0; i--){
+   Wire.write(*(((volatile uint8_t *)(&vrpm)) + i));
+  }
 }
 
 void setup() {
@@ -39,8 +54,8 @@ void setup() {
   vrpm=0;
   attachInterrupt(A_INT, isr_a, FALLING);
   l_micros=micros();
-  //Wire.begin(IIC_ADDRESS);
-  //Wire.onRequest(isr_iic);
+  Wire.begin(IIC_ADDRESS);
+  Wire.onRequest(isr_iic);
   Serial.begin(57600);
 }
 
