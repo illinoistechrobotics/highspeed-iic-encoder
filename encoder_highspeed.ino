@@ -14,8 +14,8 @@
 #define USEC_PER_MIN (60E6)
 #include <util/atomic.h>
 
-volatile int16_t vcount;
-int16_t count;
+volatile int32_t vcount;
+int32_t count;
 float rpm;
 volatile float vrpm;
 unsigned long l_micros, d_micros;
@@ -34,11 +34,10 @@ void isr_iic(){
 void setup() {
   pinMode(A_PIN_NUM,INPUT);
   pinMode(B_PIN_NUM,INPUT);
-  digitalWrite(B_PIN_NUM, HIGH);
   pinMode(Z_PIN_NUM,INPUT);
   vcount=0;
   vrpm=0;
-  attachInterrupt(A_INT, isr_a, RISING);
+  attachInterrupt(A_INT, isr_a, FALLING);
   l_micros=micros();
   //Wire.begin(IIC_ADDRESS);
   //Wire.onRequest(isr_iic);
